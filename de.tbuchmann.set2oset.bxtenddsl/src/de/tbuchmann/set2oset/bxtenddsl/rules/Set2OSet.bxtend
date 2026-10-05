@@ -1,0 +1,13 @@
+sourcemodel "http://de.ubt.ai1.bw.qvt.examples.sets.ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.osets.ecore"
+
+rule Element2Element
+	src Element s;
+	trg Element t | creation, deletion;
+	s.value <--> t.value;
+	
+rule Set2Oset
+	src MySet s;
+	trg MyOrderedSet t;
+	s.name <--> t.name;
+	{s.elements: Element2Element} <--> {t.elements: Element2Element};

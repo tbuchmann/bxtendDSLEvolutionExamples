@@ -1,0 +1,12 @@
+sourcemodel "http://de.ubt.ai1.bw.qvt.examples.bags1.ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.bags2.ecore"
+
+rule Element2Element
+	src Element s | group, filter;
+	trg Element t;
+	s <--> t.value t.multiplicity;
+
+rule Bag2Bag
+	src MyBag s;
+	trg MyBag t;
+	{s.elements: Element2Element} <--> {t.elements: Element2Element};

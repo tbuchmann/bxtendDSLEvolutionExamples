@@ -1,0 +1,29 @@
+sourcemodel "platform:/plugin/Families/model/Families.ecore"
+targetmodel "platform:/plugin/Persons/model/Persons.ecore"
+
+options
+	PREFER_CREATING_PARENT_TO_CHILD
+	PREFER_EXISTING_FAMILY_TO_NEW
+
+rule Register2Register
+	src FamilyRegister s;
+	trg PersonRegister t;
+
+rule Member2Female
+	src FamilyMember member | filter;
+	trg Female female | creation;
+	
+	member.name member.motherInverse member.daughtersInverse --> female.name;
+	member.daughtersInverse member.motherInverse --> female.personsInverse;
+	
+	member.name <-- female.name member; // implicit family corr
+
+rule Member2Male
+	src FamilyMember member | filter;
+	trg Male male | creation;
+	
+	member.name member.fatherInverse member.sonsInverse --> male.name;
+	member.sonsInverse member.fatherInverse --> male.personsInverse;
+	
+	member.name <-- male.name member;
+

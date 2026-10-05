@@ -1,0 +1,24 @@
+sourcemodel "http://de.ubt.ai1.bw.qvt.examples.gantt.ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.cpm.ecore"
+
+rule Activity2Activity
+	src Activity source;
+	trg Activity target | filter;
+		Event srcEvent | filter, creation;
+		Event trgEvent | filter, creation; // a single filter here would result in less code and more runtime
+	source.name <--> target.name;
+	source.duration <--> target.duration;
+
+rule Dependency2Activity
+	src Dependency s;
+	trg Activity t | filter;
+	s.successor s.predecessor --> t.name;
+	s.offset <--> t.duration;
+	s.dependencyType {s.predecessor: Activity2Activity[srcEvent, trgEvent]} {s.successor: Activity2Activity[srcEvent,
+	  trgEvent]} <--> t.sourceEvent t.targetEvent; // multiple unidirectional rules would be also possible for this
+
+rule Diagram2Network
+	src GanttDiagram s;
+	trg CPMNetwork t;
+	s.name <--> t.name;
+	{s.elements: Activity2Activity, Dependency2Activity} <--> {t.elements: Activity2Activity, Dependency2Activity};

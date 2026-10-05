@@ -1,0 +1,38 @@
+# =================(# OS Generated Files)=================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =================(# Java Build & Runtime Artifacts)=================
+*.class
+*.log
+hs_err_pid*
+
+# Build tools (Uncomment if using Maven or Gradle alongside Eclipse)
+# target/
+# build/
+# .gradle/
+
+# =================(# Eclipse IDE)=================
+# Eclipse default output directory for compiled classes
+bin/
+
+# Eclipse workspace metadata (if accidentally created in project root)
+.metadata/
+
+# Note on Eclipse project configuration files (.project, .classpath, .settings/):
+# - If your team relies strictly on Maven/Gradle to generate IDE files, you can ignore them.
+# - If you share standard Eclipse project configurations across your team, keep them tracked.
+# .project
+# .classpath
+# .settings/
+
+# =================(# Xtend & Xtext Generated Code)=================
+# Xtend translates code into Java source files in these directories by default
+xtend-gen/
+src-net/
+src-gen/

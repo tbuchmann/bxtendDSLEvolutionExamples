@@ -1,0 +1,23 @@
+sourcemodel "http://de.ubt.ai1.bw.qvt.examples.ast.ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.dag.ecore"
+
+rule Operator2Operator
+	src Operator s | group, filter, sort;
+	trg Operator t | sort;
+	s <--> t.op {t.leftInverse: Operator2Operator} {t.rightInverse: Operator2Operator};
+
+rule Variable2Variable
+	src Variable s | group, filter;
+	trg Variable t;
+	s  <--> t.name {t.leftInverse: Operator2Operator} {t.rightInverse: Operator2Operator};
+	
+rule Number2Number
+	src Number s | group, filter;
+	trg Number t;
+	s <--> t.value {t.leftInverse: Operator2Operator} {t.rightInverse: Operator2Operator};
+
+rule Model2Model
+	src Model s;
+	trg Model t;
+	{s.expr: Operator2Operator, Variable2Variable, Number2Number} <--> {t.exprs: Operator2Operator, Variable2Variable,
+	  Number2Number};

@@ -1,0 +1,19 @@
+sourcemodel "http://de.ubt.ai1.bw.qvt.examples.pdb1.ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.pdb2.ecore"
+
+options
+	PREFER_USING_FIRST_SPACE_TO_LAST
+
+rule Person2Person
+	src Person s;
+	trg Person t;
+	s.birthday <--> t.birthday;
+	s.placeOfBirth <--> t.placeOfBirth;
+	s.id <--> t.id;
+	s.firstName s.lastName <--> s t.name;
+
+rule Database2Database
+	src Database s;
+	trg Database t;
+	s.name <--> t.name;
+	{s.persons: Person2Person} <--> {t.persons: Person2Person};
