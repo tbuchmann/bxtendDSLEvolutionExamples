@@ -78,6 +78,9 @@ abstract class AbstractFamiliesToPersons implements BXtendTransformation {
 				EcoreUtil.delete(spareElem, false)
 			}
 		}
+		for (rule : rules) {
+			rule.rebaseline()
+		}
 		deleteUnreferencedTargetElements()
 	}
 	override void targetToSource() {
@@ -109,6 +112,9 @@ abstract class AbstractFamiliesToPersons implements BXtendTransformation {
 				EcoreUtil.delete(spareElem, false)
 			}
 		}
+		for (rule : rules) {
+			rule.rebaseline()
+		}
 		deleteUnreferencedSourceElements()
 	}
 	def void synch() {
@@ -121,10 +127,29 @@ abstract class AbstractFamiliesToPersons implements BXtendTransformation {
 			targetToSource()
 		} else {
 			for (rule : rules) {
+				rule.dissolveMismatchedPairs()
+			}
+			for (rule : rules) {
 				rule.synch()
+			}
+			// the synchronisation can change what the filters depend on (for example a name that is propagated from
+			// the other side): pairs that became stale are dissolved and the rules run again for their elements
+			var dissolved = false
+			for (rule : rules) {
+				if (rule.dissolveMismatchedPairs()) {
+					dissolved = true
+				}
+			}
+			if (dissolved) {
+				for (rule : rules) {
+					rule.synch()
+				}
 			}
 			for (rule : rules) {
 				rule.afterSynch()
+			}
+			for (rule : rules) {
+				rule.rebaseline()
 			}
 		}
 	}

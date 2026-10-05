@@ -168,18 +168,22 @@ abstract class Elem2Elem {
 	 * forward mapping itself.
 	 *
 	 * @param baseTrg the baseline values of the target side (the first value is the collection)
+	 * @param ruleIds the rules of the mapping: the elements of a collection that is shared by several kinds of
+	 *        elements are only merged if they belong to one of these rules
 	 */
-	def protected void mergeCollections(Object baseTrg, Object curSrc, Object curTrg) {
-		val base = (baseTrg as List<?>).get(0) as List<?>
+	def protected void mergeCollections(Object baseTrg, Object curSrc, Object curTrg, String... ruleIds) {
+		// the baseline holds a snapshot of every element (see snapElement): the element itself is its first value
+		val baseValues = (baseTrg as List<?>).get(0) as List<?>
+		val base = baseValues.map[b | if (b instanceof List<?>) (b as List<?>).get(0) else b].toList()
 		val src = curSrc as List<EObject>
 		val trg = curTrg as List<EObject>
-		for (added : trg.filter[e | !base.contains(e)].toList()) {
+		for (added : trg.filter[e | !base.contains(e) && isOwned(e, ruleIds)].toList()) {
 			val counterpart = counterpartOf(added)
 			if (counterpart !== null && !src.contains(counterpart)) {
 				src.add(counterpart)
 			}
 		}
-		for (removed : base.filter(EObject).filter[e | !trg.contains(e)].toList()) {
+		for (removed : base.filter(EObject).filter[e | !trg.contains(e) && isOwned(e, ruleIds)].toList()) {
 			val counterpart = counterpartOf(removed)
 			if (counterpart !== null) {
 				src.remove(counterpart)
@@ -248,6 +252,32 @@ abstract class Elem2Elem {
 	}
 	
 	/**
+	 * Override to return true to let synch() dissolve a matched pair whose elements no longer satisfy the filter of
+	 * the rule (for example a reference that lost its opposite no longer belongs to the rule for bidirectional
+	 * references). If the source element does not match, the target elements are deleted; if the target element does
+	 * not match, the source elements are deleted. Another rule can then match the remaining element.
+	 */
+	def protected boolean dissolveOnFilterMismatch() {
+		return false
+	}
+	
+	/**
+	 * Called by the transformation before the rules are synchronised, for all rules, so that the elements of a
+	 * dissolved pair are free for the other rules (generated for rules with a filter). Returns if a pair was dissolved.
+	 */
+	def boolean dissolveMismatchedPairs() {
+		return false
+	}
+	
+	/**
+	 * Records the baselines again. Called by the transformation after the creation hooks, so that what the hooks
+	 * add to the elements (derived structure) is part of the baseline and not mistaken for a change of the target
+	 * in the next synchronisation (generated for rules with a baseline).
+	 */
+	def void rebaseline() {
+	}
+	
+	/**
 	 * Called by the transformation after all rules have been synchronised: calls the creation hooks for the
 	 * elements that synch() created. (The deletion hooks are called by synch() right before an element is deleted.)
 	 */
@@ -282,6 +312,18 @@ abstract class Elem2Elem {
 	}
 	def protected ConflictPolicy conflictPolicy() {
 		return ConflictPolicy.DETECT_CHANGES
+	}
+	
+	/**
+	 * The side whose value is kept by ConflictPolicy.DETECT_CHANGES if both sides changed a mapped feature since the
+	 * last synchronisation (or if there is no baseline yet). The default is the source.
+	 */
+	enum Side {
+		SOURCE,
+		TARGET
+	}
+	def protected Side conflictWinner() {
+		return Side.SOURCE
 	}
 
 	def protected boolean hasCorr(EObject obj) {
@@ -332,6 +374,43 @@ abstract class Elem2Elem {
 	}
 	def protected static dispatch List<? extends EObject> unwrap(MultiElem elem) {
 		return elem.elements
+	}
+	
+	/**
+	 * Sets a multivalued, correspondence resolved target feature to the given values. A collection that is shared by
+	 * several kinds of elements (for example the columns of a table, of which only some are mapped by the rules of the
+	 * mapping) keeps the elements that the rules of the mapping do not own: only the owned elements are removed or added.
+	 * If all elements are owned, the collection is replaced, which also takes over the order of the values.
+	 */
+	def protected void replaceOwned(List<?> target, List<?> values, String... ruleIds) {
+		val list = target as List<Object>
+		val newValues = values as List<Object>
+		var foreign = false
+		for (e : list) {
+			if (!isOwned(e, ruleIds)) {
+				foreign = true
+			}
+		}
+		if (!foreign) {
+			list.clear()
+			list.addAll(newValues)
+		} else {
+			for (e : new ArrayList<Object>(list)) {
+				if (isOwned(e, ruleIds) && !newValues.contains(e)) {
+					list.remove(e)
+				}
+			}
+			for (e : newValues) {
+				if (!list.contains(e)) {
+					list.add(e)
+				}
+			}
+		}
+	}
+	
+	def private boolean isOwned(Object element, String... ruleIds) {
+		return element instanceof EObject && hasCorr(element as EObject)
+				&& ruleIds.contains(getCorr(element as EObject).ruleId)
 	}
 	
 	def protected static void assertRuleId(Corr corr, String... ruleIds) {

@@ -1,0 +1,50 @@
+sourcemodel "http://www.eclipse.org/emf/2002/Ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.sql.ecore"
+
+rule Attribute2Column
+	src EAttribute s | filter;
+	trg Column t | filter, creation;
+	s.name <--> t.name;
+	s.eType <--> t.type;
+
+rule Attribute2Table
+	src EAttribute s | filter, creation;
+	trg Table t | filter, creation;
+	s.name s.eContainingClass --> t.name;
+
+rule Class2Table
+	src EClass s;
+	trg Table t | filter, creation, deletion;
+	s.name <--> t.name;
+	{s.eStructuralFeatures: Attribute2Column} <--> {t.ownedColumns: Attribute2Column};
+
+rule Reference2Column
+	src EReference s | filter, creation;
+	trg Column t | filter, creation;
+		ForeignKey fk | filter, creation;
+	s.name <--> t.name;
+	{s.eContainingClass: Class2Table} --> {t.owningTable: Class2Table};
+	{s.eContainingClass: Class2Table} --> {fk.owningTable: Class2Table};
+	{s.eType: Class2Table} <--> {fk.referencedTable: Class2Table};
+
+rule Containment2Column
+	src EReference s | filter, creation, deletion;
+	trg Column t | filter, creation;
+		ForeignKey fk | filter, creation;
+	s.name s.eOpposite --> t.name;
+	{s.eType: Class2Table} --> {t.owningTable: Class2Table};
+	{s.eType: Class2Table} --> {fk.owningTable: Class2Table};
+	{s.eContainingClass: Class2Table} --> {fk.referencedTable: Class2Table};
+
+rule Reference2Relation
+	src EReference s | filter, creation, deletion;
+	trg Table t | filter, creation;
+	s.name s.eOpposite s.eContainingClass s.eType --> t.name;
+
+rule Package2Schema
+	src EPackage s;
+	trg Schema t | creation;
+	s.name <--> t.name;
+	s.nsPrefix <-- t.name;
+	s.nsURI <-- t.name;
+	{s.eClassifiers: Class2Table} <--> {t.ownedTables: Class2Table};

@@ -1,0 +1,23 @@
+sourcemodel "http://de.ubt.ai1.bw.qvt.examples.pn.ecore"
+targetmodel "http://de.ubt.ai1.bw.qvt.examples.pnw.ecore"
+
+rule Place2Place
+	src Place s;
+	trg Place t;
+	s.name <--> t.name;
+	s.noOfTokens <--> t.noOfTokens;
+	
+rule Transition2Transition
+	src Transition s;
+	trg Transition t;
+		TPEdge tpEdges | group, filter;
+		PTEdge ptEdges | group, filter;
+	s.name <--> t.name;
+	{s.trgT2P: Place2Place} t <--> tpEdges;
+	{s.srcP2T: Place2Place} t <--> ptEdges;
+	
+rule Net2Net
+	src Net s;
+	trg Net t;
+	s.name <--> t.name;
+	{s.elements: Place2Place, Transition2Transition} <--> {t.elements: Place2Place, Transition2Transition};
