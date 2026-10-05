@@ -4,6 +4,7 @@ import de.tbuchmann.pn2pnw.bxtenddsl.trafo.Pn2Pnw
 import pnw.TPEdge
 import pnw.PTEdge
 import java.util.List
+import java.util.Map
 import pnw.Transition
 import pnw.Place
 
@@ -12,6 +13,18 @@ class Transition2TransitionImpl extends Transition2Transition {
 		super(trafo)
 	}
 	
+	// The groups are keyed by their transition (see the group functions): look the group up instead of testing every
+	// transition against every group. The first of allGroups is the empty group, for transitions without edges.
+	// (The earlier matchers come nearest first, as in the filters: candidatesPtEdges(tpEdges, t, ...).)
+	override protected candidatesTpEdges(Transition t, Map<String, List<TPEdge>> groupsByKey, List<List<TPEdge>> allGroups) {
+		val group = groupsByKey.get(t.toString())
+		if (group === null) allGroups.subList(0, 1) else #[group]
+	}
+	override protected candidatesPtEdges(List<TPEdge> tpEdges, Transition t, Map<String, List<PTEdge>> groupsByKey, List<List<PTEdge>> allGroups) {
+		val group = groupsByKey.get(t.toString())
+		if (group === null) allGroups.subList(0, 1) else #[group]
+	}
+
 	override protected groupTpEdgesElem(TPEdge tpEdgesElem) {
 		tpEdgesElem.fromTransition.toString()
 	}

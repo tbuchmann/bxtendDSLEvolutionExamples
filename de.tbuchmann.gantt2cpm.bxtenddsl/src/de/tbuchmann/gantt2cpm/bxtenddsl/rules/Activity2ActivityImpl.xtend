@@ -3,6 +3,7 @@ package de.tbuchmann.gantt2cpm.bxtenddsl.rules;
 import cpm.Activity
 import cpm.Event
 import de.tbuchmann.gantt2cpm.bxtenddsl.trafo.Gantt2Cpm
+import java.util.List
 
 class Activity2ActivityImpl extends Activity2Activity {	
 	new(Gantt2Cpm trafo) {
@@ -18,6 +19,14 @@ class Activity2ActivityImpl extends Activity2Activity {
 		trgEvent.incomingActivities += trgEvent.corr.target().target
 	}
 	
+	// The events of an activity are the ones it references: look them up instead of testing every event of the model.
+	override protected candidatesSrcEvent(Activity target, List<Event> all) {
+		if (target.sourceEvent === null) emptyList else #[target.sourceEvent]
+	}
+	override protected candidatesTrgEvent(Event srcEvent, Activity target, List<Event> all) {
+		if (target.targetEvent === null) emptyList else #[target.targetEvent]
+	}
+
 	override protected filterTarget(Activity target) {
 		!target.name.contains("->")
 	}

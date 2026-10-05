@@ -71,7 +71,8 @@ class SqlSupport {
 	/** the column in the EObject table that references the class table */
 	def static void ensureEObjectColumn(Table table, Schema schema) {
 		val root = schema.eObjectTable
-		if (!root.ownedForeignKeys.exists[referencedTable === table]) {
+		// the keys that reference the table are few; the keys of the EObject table are one per class
+		if (!table.referencingForeignKeys.exists[owningTable === root]) {
 			val col = root.newColumn(table.name, "int")
 			col.properties += Property.UNIQUE
 			col.newForeignKey(table)
