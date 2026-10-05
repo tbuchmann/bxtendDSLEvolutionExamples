@@ -48,14 +48,19 @@ class Member2MaleImpl extends Member2Male {
 		
 		if (member.eContainer === null || (member.eContainer as Family).name != familyName) {
 			val preferExisting = trafo.getOption(FamiliesToPersons.OPT_PREFER_EXISTING_FAMILY_TO_NEW)
-			val families = srcRoot.families
-			var family = if (preferExisting == true) {
-				families.findFirst[name == familyName && father === null] ?: families.findFirst[name == familyName]
+			val index = FamilyIndex.of(trafo)
+			var Family family = null
+			if (preferExisting == true) {
+				val candidates = index.families(srcRoot, familyName)
+				family = candidates.findFirst[father === null] ?: candidates.head
 			}
-			family = family ?: FamiliesFactory.eINSTANCE.createFamily() => [
-				name = familyName
-				familiesInverse = srcRoot
-			]
+			if (family === null) {
+				family = FamiliesFactory.eINSTANCE.createFamily() => [
+					name = familyName
+					familiesInverse = srcRoot
+				]
+				index.added(family)
+			}
 			
 			val preferParent = trafo.getOption(FamiliesToPersons.OPT_PREFER_CREATING_PARENT_TO_CHILD)
 			if (preferParent == false || (family.father !== null && family.father !== member)) {
@@ -79,7 +84,7 @@ class Member2MaleImpl extends Member2Male {
 	override protected findMatchingFamilyMember(Male male) {
 		val parts = male.name?.split(", ")
 		if (parts === null || parts.size != 2 || srcRoot === null) return null
-		srcRoot.families.filter[name == parts.get(0)].map[#[father] + sons].flatten
+		FamilyIndex.of(trafo).families(srcRoot, parts.get(0)).map[#[father] + sons].flatten
 				.findFirst[it !== null && !it.hasCorr && name == parts.get(1)]
 	}
 
