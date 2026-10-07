@@ -1,4 +1,4 @@
-# BXtendDSL Evolution Examples
+# BXtendDSL Examples (including csync)
 
 Eight classic bidirectional transformation (BX) problems, solved with **BXtendDSL**, a rule-based DSL for
 incremental, bidirectional model transformations on top of EMF and Xtend. Each example is an Eclipse
