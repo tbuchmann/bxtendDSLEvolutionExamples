@@ -1,6 +1,8 @@
 sourcemodel "http://de.ubt.ai1.bw.qvt.examples.bags1.ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.bags2.ecore"
 
+// Bag with duplicates (bags1: one element per occurrence) <-> bag with multiplicities (bags2: value + count).
+// Source elements with the same value form one group (| group) which maps to ONE target element.
 rule Element2Element
 	src Element s | group, filter;
 	trg Element t;

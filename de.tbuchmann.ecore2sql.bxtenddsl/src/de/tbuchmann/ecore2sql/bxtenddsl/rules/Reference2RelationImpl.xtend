@@ -23,15 +23,18 @@ class Reference2RelationImpl extends Reference2Relation {
 		true
 	}
 
+	// only one of the two ends (the one with the smaller name) creates the table
 	override protected filterS(EReference s) {
 		!s.containment && s.EOpposite !== null && !s.EOpposite.containment
 			&& s.endName.compareTo(s.EOpposite.endName) < 0
 	}
 
+	// tables that stem from a bidirectional cross reference (annotation based)
 	override protected filterT(Table t) {
 		t.hasAnnotation("cross") && t.hasAnnotation("bidirectional")
 	}
 
+	// table name <class>_<ref>_inverse_<target class>_<opposite>
 	override protected tNameFrom(String sName, EReference eOpposite, EClass eContainingClass, EClassifier eType) {
 		new Type4tName(eContainingClass.name + "_" + sName + "_inverse_" + eType.name + "_" + eOpposite.name)
 	}
@@ -73,6 +76,7 @@ class Reference2RelationImpl extends Reference2Relation {
 		}
 	}
 
+	// new relation table: columns "source" and "target" with foreign keys, multiplicities as annotations
 	override protected onTCreation(Table t) {
 		val s = t.getCorr.flatSrc.head as EReference
 		val source = s.EContainingClass.getCorr.flatTrg.head as Table
@@ -84,6 +88,7 @@ class Reference2RelationImpl extends Reference2Relation {
 			if (s.EOpposite.upperBound == 1) "backwardSingle" else "backwardMulti")
 	}
 
+	// sort key of a reference end
 	def private String endName(EReference r) {
 		r.EContainingClass.name + "_" + r.name
 	}

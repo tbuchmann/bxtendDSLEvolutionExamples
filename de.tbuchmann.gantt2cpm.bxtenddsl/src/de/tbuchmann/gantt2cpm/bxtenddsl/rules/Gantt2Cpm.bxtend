@@ -1,6 +1,11 @@
 sourcemodel "http://de.ubt.ai1.bw.qvt.examples.gantt.ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.cpm.ecore"
 
+// Gantt diagram (activities + dependencies) <-> CPM network (events + activities).
+// A Gantt activity becomes a CPM activity between a start and an end event; a Gantt dependency becomes a
+// CPM activity named "<predecessor>-><successor>" that connects events of the two activities.
+
+// activity -> activity with its start (srcEvent) and end (trgEvent) event
 rule Activity2Activity
 	src Activity source;
 	trg Activity target | filter;
@@ -9,6 +14,7 @@ rule Activity2Activity
 	source.name <--> target.name;
 	source.duration <--> target.duration;
 
+// dependency -> connecting activity; the dependency type decides which events (start/end) are connected
 rule Dependency2Activity
 	src Dependency s;
 	trg Activity t | filter;
@@ -17,6 +23,7 @@ rule Dependency2Activity
 	s.dependencyType {s.predecessor: Activity2Activity[srcEvent, trgEvent]} {s.successor: Activity2Activity[srcEvent,
 	  trgEvent]} <--> t.sourceEvent t.targetEvent; // multiple unidirectional rules would be also possible for this
 
+// diagram -> network
 rule Diagram2Network
 	src GanttDiagram s;
 	trg CPMNetwork t;

@@ -20,6 +20,7 @@ import sql.Table
 class SqlSupport {
 	static val F = SqlFactory.eINSTANCE
 
+	// adds the annotations that are not yet present
 	def static void annotate(ModelElement owner, String... annotations) {
 		for (a : annotations) {
 			if (!owner.hasAnnotation(a)) {
@@ -28,10 +29,12 @@ class SqlSupport {
 		}
 	}
 
+	// true if the element carries the annotation (annotations tag which Ecore construct a table/column came from)
 	def static boolean hasAnnotation(ModelElement owner, String annotation) {
 		owner.ownedAnnotations.exists[it.annotation == annotation]
 	}
 
+	// the root table "EObject" of the schema (created on demand)
 	def static Table eObjectTable(Schema schema) {
 		var table = schema.ownedTables.findFirst[name == "EObject"]
 		if (table === null) {
@@ -46,12 +49,14 @@ class SqlSupport {
 		table
 	}
 
+	// adds a column to a table
 	def static Column newColumn(Table owner, String name, String type) {
 		val col = F.createColumn => [it.name = name; it.type = type]
 		owner.ownedColumns += col
 		col
 	}
 
+	// adds a foreign key (with a default delete event) for a column
 	def static ForeignKey newForeignKey(Column column, Table referenced) {
 		val key = F.createForeignKey => [it.column = column; referencedTable = referenced]
 		column.owningTable.ownedForeignKeys += key
@@ -79,10 +84,12 @@ class SqlSupport {
 		}
 	}
 
+	// the tables that stem from classes
 	def static List<Table> classTables(Schema schema) {
 		schema.ownedTables.filter[hasAnnotation("class")].toList
 	}
 
+	// Ecore type -> SQL type
 	def static String sqlType(EClassifier eType) {
 		switch (eType) {
 			case EcorePackage.Literals.EINT: "int"
@@ -94,6 +101,7 @@ class SqlSupport {
 		}
 	}
 
+	// SQL type -> Ecore type
 	def static EClassifier ecoreType(String sqlType) {
 		switch (sqlType) {
 			case "int": EcorePackage.Literals.EINT
@@ -104,6 +112,7 @@ class SqlSupport {
 		}
 	}
 
+	// foreign key with an explicit on-delete action
 	def static ForeignKey newForeignKey(Column column, Table referenced, Action onDelete) {
 		val key = column.newForeignKey(referenced)
 		key.ownedEvents.head.action = onDelete
@@ -146,6 +155,7 @@ class SqlSupport {
 		}
 	}
 
+	// marks a class table as abstract or concrete
 	def static void setKind(Table table, boolean isAbstract) {
 		table.ownedAnnotations.removeIf[annotation == "abstract" || annotation == "concrete"]
 		table.annotate(if (isAbstract) "abstract" else "concrete")

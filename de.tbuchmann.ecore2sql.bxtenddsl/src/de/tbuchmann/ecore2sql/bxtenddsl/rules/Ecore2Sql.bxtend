@@ -1,23 +1,31 @@
 sourcemodel "http://www.eclipse.org/emf/2002/Ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.sql.ecore"
 
+// Ecore -> SQL schema. The rules differ in the filters: single-valued attributes become columns, multi-valued ones
+// tables; containments, unidirectional and bidirectional cross references each map differently.
+// What Ecore has no feature for (primary/foreign keys, annotations) is added by the hooks in the *Impl classes.
+
+// single-valued attribute -> column
 rule Attribute2Column
 	src EAttribute s | filter;
 	trg Column t | filter, creation;
 	s.name <--> t.name;
 	s.eType <--> t.type;
 
+// multi-valued attribute -> table <class>_<attribute> (one direction only, the rest is done in the hooks)
 rule Attribute2Table
 	src EAttribute s | filter, creation;
 	trg Table t | filter, creation;
 	s.name s.eContainingClass --> t.name;
 
+// class -> table (with the columns of its single-valued attributes)
 rule Class2Table
 	src EClass s;
 	trg Table t | filter, creation, deletion;
 	s.name <--> t.name;
 	{s.eStructuralFeatures: Attribute2Column} <--> {t.ownedColumns: Attribute2Column};
 
+// single-valued, unidirectional cross reference -> column + foreign key
 rule Reference2Column
 	src EReference s | filter, creation;
 	trg Column t | filter, creation;
@@ -27,6 +35,7 @@ rule Reference2Column
 	{s.eContainingClass: Class2Table} --> {fk.owningTable: Class2Table};
 	{s.eType: Class2Table} <--> {fk.referencedTable: Class2Table};
 
+// containment reference -> column + foreign key in the table of the contained class
 rule Containment2Column
 	src EReference s | filter, creation, deletion;
 	trg Column t | filter, creation;
@@ -36,11 +45,13 @@ rule Containment2Column
 	{s.eType: Class2Table} --> {fk.owningTable: Class2Table};
 	{s.eContainingClass: Class2Table} --> {fk.referencedTable: Class2Table};
 
+// bidirectional cross reference -> relation table (both ends share one table)
 rule Reference2Relation
 	src EReference s | filter, creation, deletion;
 	trg Table t | filter, creation;
 	s.name s.eOpposite s.eContainingClass s.eType --> t.name;
 
+// package -> schema (the schema name is also used as nsPrefix and nsURI when a package is created)
 rule Package2Schema
 	src EPackage s;
 	trg Schema t | creation;

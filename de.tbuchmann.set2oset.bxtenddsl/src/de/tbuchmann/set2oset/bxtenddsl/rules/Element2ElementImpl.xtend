@@ -39,6 +39,7 @@ class Element2ElementImpl extends Element2Element {
 		tail
 	}
 	
+	// unlink a deleted element from the list
 	override protected onTDeletion(Element t) {
 		t.previous?.setNext(t.next)
 		if (t === lastTail) {

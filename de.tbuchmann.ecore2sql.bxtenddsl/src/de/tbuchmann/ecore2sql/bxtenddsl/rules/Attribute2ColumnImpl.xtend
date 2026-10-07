@@ -23,22 +23,27 @@ class Attribute2ColumnImpl extends Attribute2Column {
 		Elem2Elem.Side.TARGET
 	}
 
+	// single-valued attributes only
 	override protected filterS(EAttribute s) {
 		s.upperBound == 1
 	}
 
+	// columns that stem from an attribute (annotation based)
 	override protected filterT(Column t) {
 		t.hasAnnotation("attribute") && t.hasAnnotation("single")
 	}
 
+	// mark the new column so that filterT recognises it
 	override protected onTCreation(Column t) {
 		t.annotate("attribute", "single")
 	}
 	
+	// Ecore type -> SQL type
 	override protected typeFrom(EClassifier eType) {
 		new Type4type(eType.sqlType)
 	}
 	
+	// SQL type -> Ecore type
 	override protected eTypeFrom(String type) {
 		new Type4eType(type.ecoreType)
 	}

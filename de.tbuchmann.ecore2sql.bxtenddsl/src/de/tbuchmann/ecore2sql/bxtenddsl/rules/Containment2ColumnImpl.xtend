@@ -35,10 +35,12 @@ class Containment2ColumnImpl extends Containment2Column {
 		t.hasAnnotation("containment")
 	}
 
+	// the key that belongs to this column
 	override protected filterFk(ForeignKey fk, Column t) {
 		fk.column === t && fk.hasAnnotation("containment")
 	}
 
+	// column name encodes the reference name (and the opposite name for bidirectional ones)
 	override protected tNameFrom(String sName, EReference eOpposite) {
 		new Type4tName(if (eOpposite === null) sName + "_inverse" else eOpposite.name + "_inverse_" + sName)
 	}
@@ -80,6 +82,7 @@ class Containment2ColumnImpl extends Containment2Column {
 		}
 	}
 
+	// new column and key: type, annotations and delete event
 	override protected onTCreation(Column t) {
 		t.type = "int"
 		t.annotate(t.getCorr.flatSrc.head as EReference)
@@ -91,6 +94,7 @@ class Containment2ColumnImpl extends Containment2Column {
 		fk.annotate(fk.getCorr.flatSrc.head as EReference)
 	}
 
+	// annotations that describe the reference
 	def private annotate(sql.ModelElement element, EReference s) {
 		wanted(s).forEach[a | element.annotate(a)]
 	}

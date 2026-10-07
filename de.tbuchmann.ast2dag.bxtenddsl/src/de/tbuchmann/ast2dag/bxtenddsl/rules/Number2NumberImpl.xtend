@@ -10,6 +10,7 @@ class Number2NumberImpl extends Number2Number {
 		super(trafo)
 	}
 	
+	// group key: the numeric value (equal numbers share one DAG node)
 	override protected groupSElem(Number sElem) {
 		sElem.value.toString()
 	}
@@ -17,12 +18,14 @@ class Number2NumberImpl extends Number2Number {
 		!s.empty
 	}
 	
+	// AST -> DAG: value of the group plus the DAG parents (left/right) of all its AST members
 	override protected tValue_tLeftInverse_tRightInverseFrom(List<Number> s) {
 		val leftInverse = s.filter[leftInverse !== null].map[unwrap(leftInverse.corr.target.get(0)) as dag.Operator]
 		val rightInverse = s.filter[rightInverse !== null].map[unwrap(rightInverse.corr.target.get(0)) as dag.Operator]
 		new Type4tValue_tLeftInverse_tRightInverse(s.get(0).value, leftInverse.toList(), rightInverse.toList())
 	}
 	
+	// DAG -> AST: one AST number per DAG parent reference; the new AST node is attached to that parent
 	override protected sFrom(SrcMultiElemUpdater<Number> sUpdater, int tValue, List<List<Operator>> tLefS,
 			List<List<Operator>> tRigS) {
 		if (tLefS.empty && tRigS.empty) {

@@ -10,6 +10,7 @@ class Package2SchemaImpl extends Package2Schema {
 		super(trafo)
 	}
 
+	// new schema: annotation and the EObject root table
 	override protected onTCreation(Schema t) {
 		t.annotate("package")
 		t.eObjectTable

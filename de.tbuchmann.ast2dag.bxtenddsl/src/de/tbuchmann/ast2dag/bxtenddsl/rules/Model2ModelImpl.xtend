@@ -12,10 +12,12 @@ class Model2ModelImpl extends Model2Model {
 		super(trafo)
 	}
 	
+	// AST -> DAG direction: the DAG model lists the root plus all reachable nodes (each once, see exprsFrom below)
 	override protected exprsFrom(Operator expOpeT, Variable expVarT, Number expNumT) {
 		new Type4exprs(exprsFrom(expOpeT ?: expVarT ?: expNumT))
 	}
 	
+	// DAG -> AST direction: the root is found by walking up from any node via its inverse (parent) links
 	override protected exprFrom(List<List<ast.Operator>> expOpeS, List<List<ast.Variable>> expVarS,
 			List<List<ast.Number>> expNumS) {
 		var expr = if (!expOpeS.empty) {
@@ -38,6 +40,7 @@ class Model2ModelImpl extends Model2Model {
 		new Type4expr(expr)
 	}
 	
+	// pre-order collection of an expression and all its sub-expressions
 	def private List<Expression> exprsFrom(Expression expr) {
 		if (expr === null) {
 			return newArrayList()

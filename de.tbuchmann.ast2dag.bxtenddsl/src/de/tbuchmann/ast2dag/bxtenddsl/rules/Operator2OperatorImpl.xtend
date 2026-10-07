@@ -10,6 +10,7 @@ class Operator2OperatorImpl extends Operator2Operator {
 		super(trafo)
 	}
 	
+	// group key: the structural key of the whole sub-tree, so only identical sub-expressions are shared
 	override protected groupSElem(Operator sElem) {
 		computeKey(sElem)
 	}
@@ -17,6 +18,8 @@ class Operator2OperatorImpl extends Operator2Operator {
 		!s.empty
 	}
 	
+	// ordering of groups: a group whose key is contained in another one (a sub-expression) comes first,
+	// so that children are created before their parents
 	override protected compareSource(Source lhs, Source rhs) {
 		if (computeKey(lhs.s.get(0)).contains(computeKey(rhs.s.get(0)))) {
 			return -1
@@ -27,6 +30,7 @@ class Operator2OperatorImpl extends Operator2Operator {
 		}
 	}
 	
+	// same ordering for DAG operators: a parent comes before the operators below it
 	override protected compareTarget(Target lhs, Target rhs) {
 		if (lhs.t.isParent(rhs.t)) {
 			return -1
@@ -37,6 +41,7 @@ class Operator2OperatorImpl extends Operator2Operator {
 		}
 	}
 	
+	// AST -> DAG: operator of the group plus the DAG parents (left/right) of all its AST members
 	override protected tOp_tLeftInverse_tRightInverseFrom(List<Operator> s) {
 		val op = ArithmeticOperator.get(s.get(0).op.literal)
 		val leftInverse = s.filter[leftInverse !== null].map[unwrap(leftInverse.corr.target.get(0)) as dag.Operator]
@@ -44,6 +49,7 @@ class Operator2OperatorImpl extends Operator2Operator {
 		new Type4tOp_tLeftInverse_tRightInverse(op, leftInverse.toList(), rightInverse.toList())
 	}
 	
+	// DAG -> AST: one AST operator per DAG parent reference; the new AST node is attached to that parent
 	override protected sFrom(SrcMultiElemUpdater<Operator> sUpdater, ArithmeticOperator tOp, List<List<Operator>> tLefS,
 			List<List<Operator>> tRigS) {
 		if (tLefS.empty && tRigS.empty) {
@@ -58,6 +64,8 @@ class Operator2OperatorImpl extends Operator2Operator {
 		new Type4s(sUpdater.finish().map[op = ast.ArithmeticOperator.get(tOp.literal); it])
 	}
 	
+	// Structural key of an expression. Variable names are escaped and numbers prefixed with ~,
+	// so that different expressions can never produce the same key.
 	def private dispatch String computeKey(ast.Operator operator) {
 		val opString = switch operator.op {
 			case operator.op == ADD: "+"
@@ -75,6 +83,7 @@ class Operator2OperatorImpl extends Operator2Operator {
 		return "~" + number.value.toString()
 	}
 	
+	// true if other is reachable below operator
 	def private boolean isParent(dag.Operator operator, dag.Operator other) {
 		if (operator.left == other || operator.right == other) {
 			return true

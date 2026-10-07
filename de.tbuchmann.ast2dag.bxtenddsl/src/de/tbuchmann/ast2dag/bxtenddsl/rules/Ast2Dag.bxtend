@@ -1,21 +1,29 @@
 sourcemodel "http://de.ubt.ai1.bw.qvt.examples.ast.ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.dag.ecore"
 
+// AST (a tree, one node per occurrence) to DAG (shared nodes): equal sub-expressions of the AST
+// collapse into one DAG node. Source elements are therefore grouped (| group) by a structural key; each group
+// yields one target. leftInverse/rightInverse point from a shared node back to its parents.
+
+// Operator: one DAG operator per group of structurally equal AST operators
 rule Operator2Operator
 	src Operator s | group, filter, sort;
 	trg Operator t | sort;
 	s <--> t.op {t.leftInverse: Operator2Operator} {t.rightInverse: Operator2Operator};
 
+// Variable: one DAG variable per variable name
 rule Variable2Variable
 	src Variable s | group, filter;
 	trg Variable t;
 	s  <--> t.name {t.leftInverse: Operator2Operator} {t.rightInverse: Operator2Operator};
 	
+// Number: one DAG number per value
 rule Number2Number
 	src Number s | group, filter;
 	trg Number t;
 	s <--> t.value {t.leftInverse: Operator2Operator} {t.rightInverse: Operator2Operator};
 
+// Model: the AST has one root expression, the DAG lists all (shared) nodes
 rule Model2Model
 	src Model s;
 	trg Model t;

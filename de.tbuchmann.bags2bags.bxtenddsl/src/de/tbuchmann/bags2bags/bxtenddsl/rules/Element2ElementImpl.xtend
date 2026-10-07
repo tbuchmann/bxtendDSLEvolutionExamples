@@ -18,6 +18,7 @@ class Element2ElementImpl extends Element2Element {
 		super(trafo)
 	}
 
+	// group key: the value (equal values form one group)
 	override protected groupSElem(Element sElem) {
 		sElem.value
 	}
@@ -25,10 +26,12 @@ class Element2ElementImpl extends Element2Element {
 		!s.empty
 	}
 
+	// bags1 -> bags2: group value and its size as multiplicity
 	override protected tValue_multiplicityFrom(List<Element> s) {
 		new Type4tValue_multiplicity(s.get(0).value, s.size())
 	}
 
+	// bags2 -> bags1: create/reuse as many source elements as the multiplicity says
 	override protected sFrom(SrcMultiElemUpdater<Element> sUpdater, String tValue, int multiplicity) {
 		for (var i = 0; i < multiplicity; i++) {
 			sUpdater.update[true].value = tValue

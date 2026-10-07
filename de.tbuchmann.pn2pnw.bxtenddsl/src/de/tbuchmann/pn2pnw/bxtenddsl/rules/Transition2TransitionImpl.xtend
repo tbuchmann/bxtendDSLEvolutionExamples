@@ -25,6 +25,7 @@ class Transition2TransitionImpl extends Transition2Transition {
 		if (group === null) allGroups.subList(0, 1) else #[group]
 	}
 
+	// edges are grouped by the transition they belong to
 	override protected groupTpEdgesElem(TPEdge tpEdgesElem) {
 		tpEdgesElem.fromTransition.toString()
 	}
@@ -39,6 +40,7 @@ class Transition2TransitionImpl extends Transition2Transition {
 		if (ptEdges.empty) t.inPTEdges.empty else ptEdges.get(0).toTransition == t
 	}
 	
+	// pn -> pnw: one edge per connected place; existing edges are reused, the rest is created or removed
 	override protected tpEdgesFrom(TrgMultiElemUpdater<TPEdge> tpEdgesUpdater, Transition t, List<Place> trgT) {
 		for (place : trgT) {
 			val tpEdge = tpEdgesUpdater.update[it.fromTransition == t && it.toPlace == place]
@@ -56,6 +58,7 @@ class Transition2TransitionImpl extends Transition2Transition {
 		new Type4ptEdges(ptEdgesUpdater.finish())
 	}
 	
+	// pnw -> pn: the places are the ends of the edges
 	override protected trgT2PFrom(List<TPEdge> tpEdges) {
 		new Type4trgT2P(tpEdges.map[Place2Place.source(toPlace.corr).s])
 	}

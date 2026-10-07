@@ -10,6 +10,7 @@ class Variable2VariableImpl extends Variable2Variable {
 		super(trafo)
 	}
 	
+	// group key: the variable name
 	override protected groupSElem(Variable sElem) {
 		sElem.name
 	}
@@ -17,12 +18,14 @@ class Variable2VariableImpl extends Variable2Variable {
 		!s.empty
 	}
 	
+	// AST -> DAG: name of the group plus the DAG parents (left/right) of all its AST members
 	override protected tName_tLeftInverse_tRightInverseFrom(List<Variable> s) {
 		val leftInverse = s.filter[leftInverse !== null].map[unwrap(leftInverse.corr.target.get(0)) as dag.Operator]
 		val rightInverse = s.filter[rightInverse !== null].map[unwrap(rightInverse.corr.target.get(0)) as dag.Operator]
 		new Type4tName_tLeftInverse_tRightInverse(s.get(0).name, leftInverse.toList(), rightInverse.toList())
 	}
 	
+	// DAG -> AST: one AST variable per DAG parent reference; the new AST node is attached to that parent
 	override protected sFrom(SrcMultiElemUpdater<Variable> sUpdater, String tName, List<List<Operator>> tLefS,
 			List<List<Operator>> tRigS) {
 		if (tLefS.empty && tRigS.empty) {

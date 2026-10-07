@@ -10,6 +10,7 @@ class Activity2ActivityImpl extends Activity2Activity {
 		super(trafo)
 	}
 	
+	// new events get the next free number and are linked to the activity
 	override protected onSrcEventCreation(Event srcEvent) {
 		srcEvent.number = nextEventNumber++
 		srcEvent.outgoingActivities += srcEvent.corr.target().target // DSL mapping possible, but has creation semantic
@@ -27,9 +28,11 @@ class Activity2ActivityImpl extends Activity2Activity {
 		if (target.targetEvent === null) emptyList else #[target.targetEvent]
 	}
 
+	// "real" activities only; the ones named "a->b" represent dependencies
 	override protected filterTarget(Activity target) {
 		!target.name.contains("->")
 	}
+	// the start / end event is the one the activity references
 	override protected filterSrcEvent(Event srcEvent, Activity target) {
 		srcEvent == target.sourceEvent
 	}
@@ -37,5 +40,6 @@ class Activity2ActivityImpl extends Activity2Activity {
 		trgEvent == target.targetEvent
 	}
 	
+	// counter for event numbers
 	int nextEventNumber = 1
 }

@@ -8,10 +8,12 @@ class Person2PersonImpl extends Person2Person {
 		super(trafo)
 	}
 
+	// pdb1 -> pdb2: "<firstName> <lastName>"
 	override protected nameFrom(String firstName, String lastName) {
 		new Type4name(firstName + " " + lastName)
 	}
 
+	// pdb2 -> pdb1: split the name into first and last name
 	override protected firstName_lastNameFrom(Person s, String name) {
 		// A person that was touched on the target since the last synchronisation (any mapped
 		// attribute, not only the name) gets a fresh split under the current option; an untouched
@@ -30,6 +32,7 @@ class Person2PersonImpl extends Person2Person {
 
 	// Equivalence: a source person and a target person are equivalent if "firstName lastName" == name
 	override protected findMatchingPerson(Person s) {
+		// persons are matched by their full name
 		val key = s.firstName + " " + s.lastName
 		trgRoot?.persons?.findFirst[p | !hasCorr(p) && p.name == key]
 	}

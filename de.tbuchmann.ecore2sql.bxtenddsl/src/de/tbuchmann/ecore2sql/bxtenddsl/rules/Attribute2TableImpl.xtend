@@ -23,10 +23,12 @@ class Attribute2TableImpl extends Attribute2Table {
 		true
 	}
 
+	// multi-valued attributes only
 	override protected filterS(EAttribute s) {
 		s.upperBound != 1
 	}
 
+	// tables that stem from a multi-valued attribute (annotation based)
 	override protected filterT(Table t) {
 		t.hasAnnotation("attribute") && t.hasAnnotation("multi")
 	}
@@ -87,6 +89,7 @@ class Attribute2TableImpl extends Attribute2Table {
 		lastState.put(corr, newArrayList(s.name, s.EContainingClass))
 	}
 
+	// new table: columns "id" (foreign key to the owner class table) and "value"
 	override protected onTCreation(Table t) {
 		val s = t.corr.flatSrc.head as EAttribute
 		val owner = s.EContainingClass.corr.flatTrg.head as Table
@@ -99,6 +102,7 @@ class Attribute2TableImpl extends Attribute2Table {
 		t.newColumn("value", s.EType.sqlType) => [properties += Property.NOT_NULL]
 	}
 	
+	// table name <class>_<attribute>
 	override protected tNameFrom(String sName, EClass eContainingClass) {
 		new Type4tName(eContainingClass.name + "_" + sName)
 	}

@@ -21,10 +21,12 @@ class Reference2ColumnImpl extends Reference2Column {
 		true
 	}
 
+	// single-valued, non-containment references without opposite
 	override protected filterS(EReference s) {
 		!s.containment && s.upperBound == 1 && s.EOpposite === null
 	}
 
+	// columns that stem from such a reference (annotation based)
 	override protected filterT(Column t) {
 		t.hasAnnotation("cross") && t.hasAnnotation("single") && t.hasAnnotation("unidirectional")
 	}
@@ -42,11 +44,13 @@ class Reference2ColumnImpl extends Reference2Column {
 		}
 	}
 
+	// new column: type and annotations
 	override protected onTCreation(Column t) {
 		t.type = "int"
 		t.annotate("cross", "unidirectional", "single")
 	}
 
+	// new key: attach to its column, on delete set null
 	override protected onFkCreation(ForeignKey fk) {
 		fk.column = fk.getCorr.flatTrg.head as Column
 		fk.ownedEvents += sql.SqlFactory.eINSTANCE.createEvent => [action = Action.SET_NULL]

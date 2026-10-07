@@ -15,10 +15,12 @@ class Class2TableImpl extends Class2Table {
 		super(trafo)
 	}
 
+	// tables that stem from a class (annotation based)
 	override protected filterT(Table t) {
 		t.hasAnnotation("class")
 	}
 
+	// new table: abstract/concrete annotation, primary key, entry in the EObject root table
 	override protected onTCreation(Table t) {
 		val s = t.getCorr.flatSrc.head as EClass
 		t.setKind(s.abstract)
@@ -29,6 +31,7 @@ class Class2TableImpl extends Class2Table {
 		}
 	}
 
+	// a deleted class table also leaves the EObject root table
 	override protected onTDeletion(Table t) {
 		t.removeFromEObjectTable
 	}
@@ -45,6 +48,7 @@ class Class2TableImpl extends Class2Table {
 		corrs.filter[it.ruleId == "Class2Table"].toList.forEach[reconcile]
 	}
 
+	// per class: synchronise the EObject column name, the super classes (super-type keys) and the abstract flag
 	def private reconcile(Corr corr) {
 		val s = corr.flatSrc.head as EClass
 		val t = corr.flatTrg.head as Table

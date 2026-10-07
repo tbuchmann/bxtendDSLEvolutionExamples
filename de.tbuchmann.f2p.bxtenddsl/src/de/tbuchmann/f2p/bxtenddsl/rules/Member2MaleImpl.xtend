@@ -14,6 +14,7 @@ class Member2MaleImpl extends Member2Male {
 		super(trafo)
 	}
 	
+	// the birthday exists only in Persons: restore it for a person that is re-created for a known member
 	override protected onMaleCreation(Male male) {
 		if (birthdays.containsKey(male.corr.source().member)) {
 			male.birthday = birthdays.get(male.corr.source().member)
@@ -26,6 +27,7 @@ class Member2MaleImpl extends Member2Male {
 		Elem2Elem.ConflictPolicy.DETECT_CHANGES
 	}
 
+	// only fathers and sons; remember the birthday of members that already have a person
 	override protected filterMember(FamilyMember member) {
 		if (member.hasCorr) {
 			if ((unwrap(member.corr.target.get(0))) !== null)
@@ -34,14 +36,18 @@ class Member2MaleImpl extends Member2Male {
 		return member.sonsInverse !== null || member.fatherInverse !== null
 	}
 	
+	// Persons name: "<family>, <member>"
 	override protected malNameFrom(String memName, Family fatherInverse, Family sonsInverse) {
 		new Type4malName((fatherInverse ?: sonsInverse).name + ", " + memName)
 	}
 	
+	// the person goes to the register that corresponds to the register of the family
 	override protected personsInverseFrom(Family sonsInverse, Family fatherInverse) {
 		new Type4personsInverse(Register2Register.target((sonsInverse ?: fatherInverse).familiesInverse.corr).t)
 	}
 	
+	// Persons -> Families: split the name; put the member into an existing or new family
+	// (reusing a family with a free father slot, depending on the options) as father or son
 	override protected memNameFrom(FamilyMember member, String malName) {
 		val familyName = malName.split(", ").get(0)
 		val memberName = malName.split(", ").get(1)
@@ -88,5 +94,6 @@ class Member2MaleImpl extends Member2Male {
 				.findFirst[it !== null && !it.hasCorr && name == parts.get(1)]
 	}
 
+	// birthdays of the members, see filterMember
 	Map<FamilyMember, Date> birthdays = newHashMap()
 }

@@ -1,9 +1,12 @@
+// Person database 1 (firstName, lastName) <-> person database 2 (a single name).
+// pdb2 -> pdb1 has to split the name; the option decides at which space.
 sourcemodel "http://de.ubt.ai1.bw.qvt.examples.pdb1.ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.pdb2.ecore"
 
 options
 	PREFER_USING_FIRST_SPACE_TO_LAST
 
+// firstName + lastName <--> name (the "s" in the last mapping passes the source element to the hook)
 rule Person2Person
 	src Person s;
 	trg Person t;
@@ -12,6 +15,7 @@ rule Person2Person
 	s.id <--> t.id;
 	s.firstName s.lastName <--> s t.name;
 
+// databases map by name, their persons by Person2Person
 rule Database2Database
 	src Database s;
 	trg Database t;

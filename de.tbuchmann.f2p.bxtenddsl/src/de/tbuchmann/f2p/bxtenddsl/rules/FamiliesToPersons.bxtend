@@ -1,3 +1,6 @@
+// Families <-> Persons (the classic TTC example). Family members map to Female/Male persons named "<family>, <name>";
+// the gender comes from the role of the member (mother/daughter -> Female, father/son -> Male).
+// Persons -> Families has to find or create the family; the options steer how.
 sourcemodel "platform:/plugin/Families/model/Families.ecore"
 targetmodel "platform:/plugin/Persons/model/Persons.ecore"
 
@@ -5,10 +8,12 @@ options
 	PREFER_CREATING_PARENT_TO_CHILD
 	PREFER_EXISTING_FAMILY_TO_NEW
 
+// registers map one to one
 rule Register2Register
 	src FamilyRegister s;
 	trg PersonRegister t;
 
+// mothers and daughters
 rule Member2Female
 	src FamilyMember member | filter;
 	trg Female female | creation;
@@ -18,6 +23,7 @@ rule Member2Female
 	
 	member.name <-- female.name member; // implicit family corr
 
+// fathers and sons
 rule Member2Male
 	src FamilyMember member | filter;
 	trg Male male | creation;

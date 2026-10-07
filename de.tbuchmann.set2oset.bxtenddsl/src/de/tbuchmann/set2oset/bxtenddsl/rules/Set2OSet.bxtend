@@ -1,11 +1,16 @@
 sourcemodel "http://de.ubt.ai1.bw.qvt.examples.sets.ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.osets.ecore"
 
+// Set (unordered) <-> ordered set (elements are a doubly linked list via previous/next).
+// The list links have no source counterpart: they are maintained in the hooks of Element2ElementImpl.
+
+// element: creation and deletion of target elements are hooked to keep the list consistent
 rule Element2Element
 	src Element s;
 	trg Element t | creation, deletion;
 	s.value <--> t.value;
 	
+// set -> ordered set
 rule Set2Oset
 	src MySet s;
 	trg MyOrderedSet t;

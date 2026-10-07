@@ -1,12 +1,17 @@
 sourcemodel "http://de.ubt.ai1.bw.qvt.examples.pn.ecore"
 targetmodel "http://de.ubt.ai1.bw.qvt.examples.pnw.ecore"
 
+// Petri net (transitions reference places directly) <-> Petri net with weighted edges (explicit edge objects).
+// A transition collects its outgoing (TPEdge) and incoming (PTEdge) edges as groups.
+
+// places map one to one
 rule Place2Place
 	src Place s;
 	trg Place t;
 	s.name <--> t.name;
 	s.noOfTokens <--> t.noOfTokens;
 	
+// transition: the connected places on the pn side correspond to the edge groups on the pnw side
 rule Transition2Transition
 	src Transition s;
 	trg Transition t;
@@ -16,6 +21,7 @@ rule Transition2Transition
 	{s.trgT2P: Place2Place} t <--> tpEdges;
 	{s.srcP2T: Place2Place} t <--> ptEdges;
 	
+// net
 rule Net2Net
 	src Net s;
 	trg Net t;
